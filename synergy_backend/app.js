@@ -1,17 +1,14 @@
 import express from "express";
 import dotenv from "dotenv";
 import cors from "cors";
-import pool from "./db.js"; // Ensure this file is correctly set up
+import pool from "./db.js"; 
 import createuserRouter from './src/routes/create_userRoute.js';
-
-// Load environment variables
+import loginRouter from './src/routes/loginRoute.js';
+import resetRouter from './src/routes/resetpasswordRoute.js';
+import projectRouter from "./src/routes/projectRoute.js";
+import taskRouter from "./src/routes/taskRoute.js";
 dotenv.config();
-
-// Initialize Express
 const app = express();
-
-
-// Middleware
 app.use(cors()); 
 app.use(express.json());
 app.use(cors({
@@ -20,12 +17,10 @@ app.use(cors({
   credentials: true
 }));
 
-// Default Route
 app.get("/", (req, res) => {
   res.send("Welcome to Synergy Backend 🚀");
 });
 
-// Database Test Route
 app.get("/test-db", async (req, res) => {
   try {
     const result = await pool.query("SELECT NOW()");
@@ -35,11 +30,11 @@ app.get("/test-db", async (req, res) => {
     res.status(500).send("Database connection failed");
   }
 });
-
-// Routes
+app.use("/auth", resetRouter);
 app.use("/auth", createuserRouter);
-
-// Start Server
+app.use("/auth", loginRouter);
+app.use("/project", projectRouter);
+app.use("/task", taskRouter);
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`🚀 Server running on http://localhost:${PORT}`);

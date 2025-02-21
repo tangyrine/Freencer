@@ -2,6 +2,7 @@ import bcrypt from 'bcrypt';
 import validator from 'validator';
 import { v4 as uuidv4 } from 'uuid';
 import pool from '../../db.js';
+import { generateToken } from './jwt.js';
 
 export async function create_user(req, res) {
     try {
@@ -18,7 +19,6 @@ export async function create_user(req, res) {
         if (!validator.isMobilePhone(phone, 'en-IN')) {
             return res.status(400).json({ error: "Invalid Phone Number" });
         }
-        
 
         if (password.length < 6) {
             return res.status(400).json({ error: "Password must be at least 6 characters" });
@@ -37,9 +37,12 @@ export async function create_user(req, res) {
             [user_id, email, phone, name, hashedPassword]
         );
 
+        const token = generateToken(newUser.rows[0]);
+
         return res.status(201).json({
             message: "User created successfully",
-            user: newUser.rows[0]
+            user: newUser.rows[0],
+            token
         });
 
     } catch (error) {
