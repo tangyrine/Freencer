@@ -19,11 +19,14 @@ dotenv.config();
 const app = express();
 
 // Configure CORS for both local and Vercel frontend
+const cors = require("cors");
+
 app.use(cors({
-  origin: [process.env.CLIENT_URL, "http://localhost:3000"], // Allow multiple origins
+  origin: "*",  // Allow all origins (not recommended for production)
   methods: "GET,POST,PUT,DELETE",
   credentials: true
 }));
+
 
 // Middleware
 app.use(express.json());
