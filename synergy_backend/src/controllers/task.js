@@ -1,6 +1,17 @@
 import pool from "../../db.js";
 import { authenticateToken } from "./jwt.js";
 import { v4 as uuidv4 } from "uuid";
+import nodemailer from "nodemailer";
+import cron from "node-cron";
+
+const transporter = nodemailer.createTransport({
+  service: "gmail",
+  auth: {
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS,
+  },
+});
+
 
 export const createTask = async (req, res) => {
     try {
@@ -212,3 +223,68 @@ export const deleteTask = async (req, res) => {
         return res.status(500).json({ error: "Internal server error" });
     }
 };
+
+export const sendTaskDeadlineReminders = async () => {
+    try {
+      const tomorrow = new Date();
+      tomorrow.setDate(tomorrow.getDate() + 1);
+      tomorrow.setUTCHours(0, 0, 0, 0);
+  
+      const tomorrowEnd = new Date(tomorrow);
+      tomorrowEnd.setUTCHours(23, 59, 59, 999);
+  
+      const query = `
+        SELECT task_id, project_id, task_name, deadline 
+        FROM task 
+        WHERE deadline BETWEEN $1 AND $2 
+        AND status IN ('pending', 'ongoing', 'paused')
+      `;
+  
+      const { rows: tasks } = await pool.query(query, [
+        tomorrow.toISOString(),
+        tomorrowEnd.toISOString(),
+      ]);
+  
+      if (tasks.length === 0) {
+        console.warn("⚠️ No tasks due tomorrow.");
+        return;
+      }
+  
+      for (const task of tasks) {
+        const projectQuery = `SELECT user_id, project_name FROM project WHERE project_id = $1`;
+        const { rows: projects } = await pool.query(projectQuery, [task.project_id]);
+  
+        if (projects.length === 0) {
+          console.warn(`⚠️ No project found for task: ${task.task_name}`);
+          continue;
+        }
+  
+        const userQuery = `SELECT email FROM "user" WHERE user_id = $1`;
+        const { rows: users } = await pool.query(userQuery, [projects[0].user_id]);
+  
+        if (users.length === 0 || !users[0].email) {
+          console.warn(`⚠️ No email found for user of task: ${task.task_name}`);
+          continue;
+        }
+  
+        const mailOptions = {
+          from: process.env.EMAIL_USER,
+          to: users[0].email,
+          subject: "Task Deadline Reminder",
+          text: `⏳ Your task "${task.task_name}" in project "${projects[0].project_name}" is due tomorrow. 
+  Stay focused and get it done! 💡`,
+        };
+  
+        await transporter.sendMail(mailOptions);
+        console.log(`✅ Email sent to ${users[0].email} for task: ${task.task_name}`);
+      }
+    } catch (error) {
+      console.error("❌ Error in sendTaskDeadlineReminders:", error);
+    }
+  };
+
+  cron.schedule("0 9 * * *", () => {
+    console.log("⏳ Running scheduled task reminders...");
+    sendTaskDeadlineReminders();
+  });
+  
