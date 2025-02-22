@@ -10,6 +10,7 @@ import taskRouter from "./src/routes/taskRoute.js";
 import userRouter from "./src/routes/userRoute.js";
 import expenseRouter from "./src/routes/expenseRoute.js";
 import invoiceRouter from "./src/routes/invoiceRoute.js";
+import reminderRouter from "./src/routes/reminderRoute.js";
 dotenv.config();
 const app = express();
 app.use(cors()); 
@@ -41,6 +42,7 @@ app.use("/task", taskRouter);
 app.use("/user", userRouter);
 app.use("/expense", expenseRouter);
 app.use("/invoice", invoiceRouter);
+app.use("/reminder", reminderRouter);
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`🚀 Server running on http://localhost:${PORT}`);
