@@ -154,6 +154,40 @@ export const displayProject = async (req, res) => {
     }
 };
 
+export const dashboard = async (req, res) => {
+    try {
+        authenticateToken(req, res, async () => {
+            const userEmail = req.user.email; // Get email from token
+            
+            // Fetch user_id using email
+            const userQuery = `SELECT user_id FROM "user" WHERE email = $1;`;
+            const userResult = await pool.query(userQuery, [userEmail]);
+
+            if (userResult.rows.length === 0) {
+                return res.status(404).json({ error: "User not found" });
+            }
+
+            const userId = userResult.rows[0].user_id;
+
+            // Fetch projects for the user
+            const projectQuery = `
+                SELECT project_name, deadline, status
+                FROM project 
+                WHERE user_id = $1;
+            `;
+            const projectResult = await pool.query(projectQuery, [userId]);
+
+            return res.status(200).json({ projects: projectResult.rows });
+        });
+    } catch (error) {
+        console.error("Error fetching projects:", error);
+        return res.status(500).json({ error: "Internal server error" });
+    }
+};
+
+
+
+
 export const deleteProject = async (req, res) => {
     try {
         authenticateToken(req, res, async () => {

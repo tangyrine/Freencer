@@ -17,16 +17,7 @@ import reminderRouter from "./src/routes/reminderRoute.js";
 dotenv.config();
 
 const app = express();
-
-// Configure CORS for both local and Vercel frontend
-const cors = require("cors");
-
-app.use(cors({
-  origin: "*",  // Allow all origins (not recommended for production)
-  methods: "GET,POST,PUT,DELETE",
-  credentials: true
-}));
-
+app.use(cors({ origin: "http://localhost:3000", credentials: true }));
 
 // Middleware
 app.use(express.json());
@@ -68,5 +59,5 @@ if (process.env.NODE_ENV !== "vercel") {
   });
 }
 
-// Export app for Vercel (MUST HAVE THIS!)
+// ✅ Export app for Vercel
 export default app;

@@ -12,6 +12,55 @@ const transporter = nodemailer.createTransport({
   },
 });
 
+export const getInvoices = async (req, res) => {
+    try {
+        console.log("Fetching invoices...");
+
+        if (!req.user || !req.user.email) {
+            return res.status(401).json({ error: "Unauthorized" });
+        }
+
+        const userEmail = req.user.email;
+        console.log("Fetching user ID for:", userEmail);
+
+        const userQuery = `SELECT user_id FROM "user" WHERE email = $1`;
+        const userResult = await pool.query(userQuery, [userEmail]);
+
+        if (userResult.rows.length === 0) {
+            console.log("User not found:", userEmail);
+            return res.status(404).json({ error: "User not found" });
+        }
+
+        const user_id = userResult.rows[0].user_id;
+        console.log("User ID:", user_id);
+
+        const query = `
+            SELECT 
+            p.project_name,
+            COALESCE(TO_CHAR(p.start_date, 'YYYY-MM-DD HH24:MI:SS'), 'N/A') AS start_date, 
+            COALESCE(TO_CHAR(p.deadline, 'YYYY-MM-DD HH24:MI:SS'), 'N/A') AS deadline,
+            i.total_amount, 
+            i.status
+            FROM invoice i
+            JOIN project p ON i.project_id = p.project_id
+            WHERE i.user_id = $1;
+        `;
+
+        console.log("Executing query:", query);
+        const result = await pool.query(query, [user_id]);
+
+        console.log("Query Result:", result.rows);
+
+        return res.status(200).json(result.rows.length > 0 ? result.rows : []);
+
+    } catch (error) {
+        console.error("Error fetching invoices:", error);
+        return res.status(500).json({ error: "Internal server error" });
+    }
+};
+
+
+
 
 export const createTask = async (req, res) => {
     try {

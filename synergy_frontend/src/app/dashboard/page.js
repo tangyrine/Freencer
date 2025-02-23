@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import {jwtDecode} from "jwt-decode"; // Import jwt-decode
 import Sidebar from "../components/sidebar";
 import CalendarComponent from "../components/calendar";
 import GrowthChart from "../components/growthChart";
@@ -9,8 +10,8 @@ import ProjectList from "../components/projectList";
 
 export default function Dashboard() {
   const [projects, setProjects] = useState([]);
-  const [tasks, setTasks] = useState([]);
   const [reminders, setReminders] = useState([]); // Store notifications
+  const [deadlines, setDeadlines] = useState([]); // Store deadlines
   const [loading, setLoading] = useState(true);
   const router = useRouter(); // For project redirection
 
@@ -24,27 +25,33 @@ export default function Dashboard() {
           return;
         }
 
+        const decodedToken = jwtDecode(token);
+        const userId = decodedToken.user_id; // Extract user_id from JWT
+
         // Fetch projects
-        const projectRes = await fetch("http://localhost:5000/projects", {
+        const projectRes = await fetch("http://localhost:5000/project/dashboard", {
           headers: { Authorization: `Bearer ${token}` },
         });
         const projectData = await projectRes.json();
 
-        // Fetch tasks
-        const taskRes = await fetch("http://localhost:5000/tasks", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        const taskData = await taskRes.json();
-
         // Fetch reminders (Notifications from backend)
-        const reminderRes = await fetch("http://localhost:5000/reminders", {
+        const reminderRes = await fetch("http://localhost:5000/reminder/create", {
           headers: { Authorization: `Bearer ${token}` },
         });
         const reminderData = await reminderRes.json();
 
-        setProjects(projectData);
-        setTasks(taskData);
+        // Extract deadlines from projects
+        const userProjects = projectData.projects || [];
+        const formattedDeadlines = userProjects
+          .filter(project => project.user_id === userId && project.deadline) // Ensure project belongs to user and has a deadline
+          .map(project => ({
+            date: new Date(project.deadline), // Convert deadline to Date object
+            name: project.name,
+          }));
+
+        setProjects(userProjects);
         setReminders(reminderData);
+        setDeadlines(formattedDeadlines);
       } catch (error) {
         console.error("Error fetching data:", error);
       } finally {
@@ -66,7 +73,7 @@ export default function Dashboard() {
 
   // Function to handle project click (Navigate to project details)
   const handleProjectClick = (projectId) => {
-    router.push(`/project/${projectId}`);
+    router.push(`/project/display`);
   };
 
   return (
@@ -77,6 +84,11 @@ export default function Dashboard() {
 
         {loading ? (
           <p>Loading...</p>
+        ) : !Array.isArray(projects) ? (
+          <div className="flex flex-col items-center justify-center h-[70vh] bg-red-50 rounded-lg">
+            <h2 className="text-xl font-semibold text-red-600">Error Loading Projects</h2>
+            <p className="text-red-500">Please try again later.</p>
+          </div>
         ) : projects.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-[70vh] bg-green-50 rounded-lg">
             <h2 className="text-xl font-semibold">No Projects Added Yet</h2>
@@ -89,10 +101,11 @@ export default function Dashboard() {
           <div className="grid grid-cols-3 gap-4">
             <div className="col-span-2">
               <GrowthChart />
-              <ProjectList projects={projects} tasks={tasks} onProjectClick={handleProjectClick} />
+              <ProjectList projects={projects} onProjectClick={handleProjectClick} />
             </div>
             <div>
-              <CalendarComponent />
+              {/* Pass deadlines to CalendarComponent */}
+              <CalendarComponent deadlines={deadlines} />
               <Notifications reminders={reminders} />
             </div>
           </div>

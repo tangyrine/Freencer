@@ -21,7 +21,7 @@ export default function SignupPage() {
     setMessage("Submitting...");
 
     try {
-      const response = await fetch("http://localhost:5000/auth/create-user", {
+      const response = await fetch("http://localhost:5000/auth/create/create-user", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
@@ -42,7 +42,7 @@ export default function SignupPage() {
   };
 
   return (
-    <div className="flex min-h-screen">
+    <div className="flex min-h-screen text-black">
       {/* Left side with logo */}
       <div className="w-1/2 bg-gradient-to-br from-green-800 to-black flex flex-col items-center justify-center text-white">
         <img src="/logo.png" alt="Freencer Logo" className="w-300 h-300" />
@@ -83,7 +83,7 @@ export default function SignupPage() {
 
         {message && <p className="mt-4 text-red-600 text-center">{message}</p>}
 
-        <p className="mt-6 text-center">
+        <p className="mt-6 text-center text-black">
           Already have an account? <a href="/login" className="text-green-600">Log In</a>
         </p>
       </div>

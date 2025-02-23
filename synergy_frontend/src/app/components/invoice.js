@@ -26,7 +26,7 @@ export default function InvoiceModal({ onClose }) {
 
   const handleSubmit = async () => {
     try {
-      const response = await axios.post("/api/invoices", invoiceData, {
+      const response = await axios.post("/invoice/create", invoiceData, {
         headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
       });
       alert("Invoice created successfully");

@@ -1,17 +1,17 @@
 export default function ProjectList({ projects, markAsCompleted }) {
-  const ongoingProjects = projects.filter((p) => p.status !== "Completed");
-  const completedProjects = projects.filter((p) => p.status === "Completed");
+  const ongoingProjects = projects.filter((p) => p.status !== "completed");
+  const completedProjects = projects.filter((p) => p.status === "completed");
+  console.log("Projects Data:", ongoingProjects);
 
   return (
     <div>
       <h2 className="text-xl font-bold">Ongoing Projects</h2>
       <div className="grid grid-cols-2 gap-4">
-        {ongoingProjects.map((project) => (
-          <div key={project.id} className="bg-green-100 p-4 rounded-lg shadow">
-            <h3 className="font-bold">{project.name}</h3>
-            <p>Progress: {project.progress || 0}% done</p>
+        {ongoingProjects.map((project, index) => (  // CHANGED: Added 'index' fallback
+          <div key={project.id || index} className="bg-green-100 p-4 rounded-lg shadow">
+<h3 className="font-bold">{project.project_name ? project.project_name : "Unnamed Project"}</h3>
             <p>Deadline: {project.deadline}</p>
-            <p>Payment Status: {project.paymentStatus || "Unpaid"}</p>
+            <p>Project Status: {project.status || "Unpaid"}</p>
             <button
               onClick={() => markAsCompleted(project.id)}
               className="bg-blue-500 text-white px-4 py-2 rounded mt-2"
@@ -24,11 +24,11 @@ export default function ProjectList({ projects, markAsCompleted }) {
 
       <h2 className="text-xl font-bold mt-6">Completed Projects</h2>
       <div className="grid grid-cols-3 gap-4">
-        {completedProjects.map((project) => (
-          <div key={project.id} className="bg-blue-100 p-4 rounded-lg shadow">
+        {completedProjects.map((project, index) => (  // CHANGED: Added 'index' fallback
+          <div key={project.id || index} className="bg-blue-100 p-4 rounded-lg shadow">
             <h3 className="font-bold">{project.name}</h3>
             <p>Project Completed on: {project.completedDate}</p>
-            <p>Payment Status: {project.paymentStatus || "Paid"}</p>
+            <p>Project Status: {project.status || "Paid"}</p>
             <button className="bg-green-500 text-white px-4 py-2 rounded mt-2">
               Download Invoice
             </button>
@@ -38,9 +38,10 @@ export default function ProjectList({ projects, markAsCompleted }) {
     </div>
   );
 }
+
 const markAsCompleted = async (projectId) => {
   try {
-    const response = await fetch(`/api/projects/${projectId}/complete`, {
+    const response = await fetch(`/project/change-status`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
     });

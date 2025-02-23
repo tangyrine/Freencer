@@ -6,33 +6,39 @@ import GrowthChart from "../components/growthChart";
 export default function Payments() {
   const [payments, setPayments] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
-    async function fetchProjects() {
-      try {
-        const response = await fetch("http://localhost:5000/api/projects/user"); // Fetch projects for the logged-in user
-        const data = await response.json();
+    const fetchInvoices = async () => {
+        try {
+            const response = await fetch("http://localhost:5000/task/invoice", {
+                method: "GET",
+                credentials: "include", // If using cookies for auth
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${localStorage.getItem("token")}` // If using JWT
+                }
+            });
 
-        // Extract payment details from projects
-        const formattedPayments = data.map((project) => ({
-          id: project.id,
-          name: project.name,
-          amount: project.payment?.amount || "₹0",
-          startDate: project.startDate,
-          endDate: project.endDate,
-          status: project.payment?.status || "Pending",
-        }));
+            if (!response.ok) {
+                throw new Error(`Failed to fetch invoices: ${response.status}`);
+            }
 
-        setPayments(formattedPayments);
-      } catch (error) {
-        console.error("Error fetching payments:", error);
-      } finally {
-        setLoading(false);
-      }
-    }
+            const data = await response.json();
+            console.log("Invoices:", data);
+            setPayments(data); // Ensure this is the correct setter function
+        } catch (err) {
+            console.error("Error fetching invoices:", err);
+            setError(err.message);
+        } finally {
+            setLoading(false);
+        }
+    };
 
-    fetchProjects();
-  }, []);
+    fetchInvoices();
+}, []);
+
+
 
   return (
     <div className="flex min-h-screen bg-gray-100 text-black">
@@ -46,38 +52,36 @@ export default function Payments() {
           {loading ? (
             <p>Loading...</p>
           ) : (
-            <table className="w-full border-collapse">
-              <thead>
-                <tr className="bg-green-200">
-                  <th className="p-2 text-left">Project Name</th>
-                  <th className="p-2 text-left">Amount</th>
-                  <th className="p-2 text-left">Start Date</th>
-                  <th className="p-2 text-left">End Date</th>
-                  <th className="p-2 text-left">Status</th>
-                  <th className="p-2 text-left">Action</th>
-                </tr>
-              </thead>
-              <tbody>
-                {payments.map((payment) => (
-                  <tr key={payment.id} className="border-b">
-                    <td className="p-2">{payment.name}</td>
-                    <td className="p-2">{payment.amount}</td>
-                    <td className="p-2">{payment.startDate}</td>
-                    <td className="p-2">{payment.endDate}</td>
-                    <td className="p-2">
-                      <span className={`px-2 py-1 rounded ${payment.status === "Paid" ? "bg-green-200" : "bg-yellow-200"}`}>
-                        {payment.status}
-                      </span>
-                    </td>
-                    <td className="p-2">
-                      {payment.status === "Paid" && (
-                        <button className="bg-green-600 text-white px-4 py-1 rounded">Download Invoice</button>
-                      )}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+            <table className="w-full text-left border-collapse">
+  <thead>
+    <tr className="bg-green-200">
+      <th>Project Name</th>
+      <th>Amount</th>
+      <th>Start Date</th>
+      <th>Deadline</th>
+      <th>Status</th>
+      <th>Action</th>
+    </tr>
+  </thead>
+  <tbody>
+    {payments.map((payment) => (
+      <tr key={payment.id || payment._id}>
+        <td>{payment.project_name}</td> {/* Check the exact field name */}
+        <td>{parseFloat(payment.total_amount).toFixed(2)}</td>
+        <td>{new Date(payment.start_date).toLocaleString()}</td> {/* Convert timestamp */}
+        <td>{new Date(payment.deadline).toLocaleString()}</td>
+        <td>
+          <span className="bg-yellow-300 px-2 py-1 rounded">{payment.status}</span>
+        </td>
+        <td>
+          <button className="bg-blue-500 text-white px-3 py-1 rounded">View</button>
+        </td>
+      </tr>
+    ))}
+  </tbody>
+</table>
+
+
           )}
         </div>
       </div>

@@ -6,6 +6,7 @@ import Sidebar from "../../components/sidebar";
 export default function ProjectDetailsPage({ params }) {
   const router = useRouter();
   const projectId = params?.id;
+  const userId = "yourUserId"; // Replace with actual user ID logic
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isAddTaskModalOpen, setIsAddTaskModalOpen] = useState(false);
   const [isEditTaskModalOpen, setIsEditTaskModalOpen] = useState(false);
@@ -14,16 +15,16 @@ export default function ProjectDetailsPage({ params }) {
   const [project, setProject] = useState(null);
 
   useEffect(() => {
-    if (projectId) {
-      fetch(`/api/projects/${projectId}`)
+    if (userId) {
+      fetch(`/project/display/${userId}`)
         .then((res) => res.json())
         .then((data) => setProject(data))
         .catch((err) => console.error("Error fetching project:", err));
     }
-  }, [projectId]);
+  }, [userId]);
 
   const addTask = async (task) => {
-    const res = await fetch(`/api/projects/${projectId}/tasks`, {
+    const res = await fetch(`/task/create/${projectId}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(task),
@@ -36,7 +37,7 @@ export default function ProjectDetailsPage({ params }) {
   };
 
   const updateTask = async () => {
-    const res = await fetch(`/api/projects/${projectId}/tasks/${selectedTask.id}`, {
+    const res = await fetch(`/task/edit/${selectedTask.id}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(selectedTask),
@@ -51,7 +52,7 @@ export default function ProjectDetailsPage({ params }) {
   };
 
   const markTaskCompleted = async (taskId) => {
-    const res = await fetch(`/api/projects/${projectId}/tasks/${taskId}/complete`, {
+    const res = await fetch(`/task/change-status/${taskId}`, {
       method: "PATCH",
     });
     if (res.ok) {
@@ -63,7 +64,7 @@ export default function ProjectDetailsPage({ params }) {
   };
 
   const updateProject = async () => {
-    const res = await fetch(`/api/projects/${projectId}`, {
+    const res = await fetch(`/project/edit/${userId}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(project),

@@ -17,13 +17,44 @@ export function generateToken(user) {
     );
 }
 
+
+
 export function authenticateToken(req, res, next) {
-    const token = req.header('Authorization');
-    if (!token) return res.status(401).json({ error: 'Access denied, token missing' });
+    const token = req.header("Authorization");
     
-    jwt.verify(token.replace('Bearer ', ''), JWT_SECRET, (err, user) => {
-        if (err) return res.status(403).json({ error: 'Invalid token' });
-        req.user = user;
-        next();
-    });
+    if (!token) {
+        console.log("No token provided");
+        return res.status(401).json({ error: "Access denied, token missing" });
+    }
+
+    const cleanedToken = token.replace("Bearer ", "");
+    
+    try {
+        const decoded = jwt.decode(cleanedToken, { complete: true });
+        if (!decoded) {
+            console.log("Invalid Token Structure");
+            return res.status(403).json({ error: "Invalid token format" });
+        }
+
+        if (decoded.payload.exp && Date.now() >= decoded.payload.exp * 1000) {
+            console.log("Token Expired");
+            return res.status(401).json({ error: "Token expired" });
+        }
+        
+        jwt.verify(cleanedToken, JWT_SECRET, (err, user) => {
+            if (err) {
+                console.log("Token Verification Failed:", err.message);
+                return res.status(403).json({ error: "Invalid token" });
+            }
+            
+            req.user = user;
+            console.log("Token Verified. User:", user);
+            next();
+        });
+
+    } catch (error) {
+        console.log("Token Parsing Error:", error);
+        return res.status(403).json({ error: "Invalid token" });
+    }
 }
+

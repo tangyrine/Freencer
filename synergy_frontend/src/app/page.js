@@ -118,7 +118,7 @@ export default function Home() {
         <div className="space-x-4">
           <button
             onClick={() => router.push("/login")}
-            className="px-5 py-2 border border-black rounded-lg hover:bg-black hover:text-white transition"
+            className="px-5 py-2 border border-black rounded-lg text-black hover:bg-black hover:text-white transition"
           >
             Login
           </button>
