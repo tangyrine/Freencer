@@ -2,7 +2,14 @@
 
 import { useState, useEffect } from "react";
 import Sidebar from "../components/sidebar";
-import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  Tooltip,
+  ResponsiveContainer,
+} from "recharts";
 import { PieChart, Pie, Cell, Legend } from "recharts";
 
 export default function PerformancePage() {
@@ -31,51 +38,81 @@ export default function PerformancePage() {
 
     setTimeout(() => {
       setAiInsights({
-        projectInsights: "Your projects are trending upwards with a 15% increase in engagement.",
-        growthAreas: "Improving response times in tasks could boost efficiency by 10%.",
+        projectInsights:
+          "Your projects are trending upwards with a 15% increase in engagement.",
+        growthAreas:
+          "Improving response times in tasks could boost efficiency by 10%.",
       });
     }, 2000);
   }, []);
 
   return (
-    <div className="flex min-h-screen bg-gray-100 text-black">
+    <div className="flex min-h-screen bg-gradient-to-r from-blue-100 via-purple-200 to-indigo-300 text-black">
       <Sidebar activePage="performance" />
-      <div className="flex-1 p-6 overflow-y-auto max-h-screen">
-        <h1 className="text-3xl font-bold mb-4">Performance Dashboard</h1>
-        
-        <div className="mt-4 bg-white p-4 rounded-lg shadow-md">
-          <h3 className="text-lg font-semibold mb-2">My Growth Chart</h3>
-          <ResponsiveContainer width="100%" height={200}>
+      <div className="flex-1 p-8 overflow-y-auto max-h-screen bg-white shadow-lg rounded-lg">
+        <h1 className="text-4xl font-extrabold text-gray-800 mb-6">
+          Performance Dashboard
+        </h1>
+
+        {/* Growth Chart */}
+        <div className="mt-6 bg-gradient-to-t from-green-100 to-green-200 p-6 rounded-lg shadow-md">
+          <h3 className="text-xl font-semibold text-green-600 mb-4">
+            My Growth Chart
+          </h3>
+          <ResponsiveContainer width="100%" height={250}>
             <LineChart data={growthData}>
               <XAxis dataKey="name" />
               <YAxis />
               <Tooltip />
-              <Line type="monotone" dataKey="value" stroke="#82ca9d" />
+              <Line
+                type="monotone"
+                dataKey="value"
+                stroke="#82ca9d"
+                strokeWidth={3}
+              />
             </LineChart>
           </ResponsiveContainer>
         </div>
 
-        <div className="flex flex-wrap mt-4 gap-4">
-          <div className="w-full sm:w-1/2 bg-gray-100 p-4 rounded-lg shadow-md">
-            <h3 className="text-lg font-semibold">Project Insights</h3>
-            <p className="mt-2">{aiInsights.projectInsights}</p>
+        {/* AI Insights */}
+        <div className="flex flex-wrap mt-8 gap-6">
+          <div className="w-full sm:w-1/2 bg-gradient-to-r from-indigo-100 to-blue-100 p-6 rounded-lg shadow-md hover:shadow-xl transition-all duration-300 ease-in-out">
+            <h3 className="text-lg font-semibold text-blue-700">
+              Project Insights
+            </h3>
+            <p className="mt-2 text-gray-700">{aiInsights.projectInsights}</p>
           </div>
-          <div className="w-full sm:w-1/2 bg-gray-100 p-4 rounded-lg shadow-md">
-            <h3 className="text-lg font-semibold">Growth or Things to Improve</h3>
-            <p className="mt-2">{aiInsights.growthAreas}</p>
+          <div className="w-full sm:w-1/2 bg-gradient-to-r from-yellow-100 to-orange-100 p-6 rounded-lg shadow-md hover:shadow-xl transition-all duration-300 ease-in-out">
+            <h3 className="text-lg font-semibold text-yellow-700">
+              Growth or Things to Improve
+            </h3>
+            <p className="mt-2 text-gray-700">{aiInsights.growthAreas}</p>
           </div>
         </div>
 
-        <div className="mt-4 bg-white p-4 rounded-lg shadow-md">
-          <h3 className="text-lg font-semibold mb-2">Performance Breakdown</h3>
-          <ResponsiveContainer width="100%" height={250}>
+        {/* Performance Breakdown */}
+        <div className="mt-6 bg-gradient-to-t from-gray-100 to-gray-200 p-6 rounded-lg shadow-md">
+          <h3 className="text-xl font-semibold text-gray-800 mb-4">
+            Performance Breakdown
+          </h3>
+          <ResponsiveContainer width="100%" height={300}>
             <PieChart>
-              <Pie data={performanceData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={80}>
+              <Pie
+                data={performanceData}
+                dataKey="value"
+                nameKey="name"
+                cx="50%"
+                cy="50%"
+                outerRadius={90}
+                innerRadius={60}
+                paddingAngle={5}
+                label
+              >
                 {performanceData.map((entry, index) => (
                   <Cell key={`cell-${index}`} fill={entry.color} />
                 ))}
               </Pie>
-              <Legend />
+              <Legend verticalAlign="top" height={36} />
             </PieChart>
           </ResponsiveContainer>
         </div>

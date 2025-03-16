@@ -27,21 +27,21 @@ export default function Sidebar() {
         if (!token) {
           throw new Error("No authentication token found. Please log in.");
         }
-    
+
         const res = await fetch("http://localhost:5000/user/display_user", {
           method: "GET",
           credentials: "include",
           headers: {
             "Content-Type": "application/json",
-            "Authorization": `Bearer ${token}`,
+            Authorization: `Bearer ${token}`,
           },
         });
-    
+
         if (!res.ok) {
           const errorText = await res.text();
           throw new Error(`Failed to fetch user: ${errorText}`);
         }
-    
+
         const data = await res.json();
         console.log("✅ User data:", data);
         setUser(data);
@@ -70,12 +70,12 @@ export default function Sidebar() {
       if (!token) {
         throw new Error("No authentication token found. Please log in.");
       }
-  
+
       const res = await fetch("http://localhost:5000/user/edit_user", {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`,
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
           name: user.name,
@@ -85,12 +85,12 @@ export default function Sidebar() {
         }),
         credentials: "include",
       });
-  
+
       if (!res.ok) {
         const errorText = await res.text();
         throw new Error(`Failed to update user: ${errorText}`);
       }
-  
+
       const updatedUser = await res.json();
       console.log("✅ User updated successfully:", updatedUser);
       setUser(updatedUser);
@@ -99,12 +99,14 @@ export default function Sidebar() {
       console.error("❌ Error saving user details:", error.message);
     }
   };
-  
 
   const handleDelete = async () => {
     if (confirm("Are you sure you want to delete your account?")) {
       try {
-        await fetch("http://localhost:5000/user/delete_user", { method: "DELETE", credentials: "include" });
+        await fetch("http://localhost:5000/user/delete_user", {
+          method: "DELETE",
+          credentials: "include",
+        });
         setShowProfile(false);
         handleLogout();
       } catch (error) {
@@ -125,69 +127,128 @@ export default function Sidebar() {
   };
 
   return (
-    <div className="w-64 bg-white shadow-lg min-h-screen p-4">
-      <h2 className="text-green-600 text-2xl font-bold">Freencer</h2>
-      <button className="mt-6 w-full bg-blue-500 text-white py-2 rounded" onClick={() => setShowProfile(true)}>
+    <div className="w-64 bg-white shadow-lg min-h-screen p-4 rounded-lg">
+      {" "}
+      {/* Sidebar rounded */}
+      <h2 className="text-green-600 text-2xl font-bold rounded-lg">
+        Freencer
+      </h2>{" "}
+      {/* Title rounded */}
+      <button
+        className="mt-6 w-full bg-blue-500 text-white py-2 rounded-lg" // Rounded button
+        onClick={() => setShowProfile(true)}
+      >
         Profile
       </button>
-
       {showProfile && user && (
-  <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-    <div className="bg-white p-6 rounded-lg shadow-lg w-96">
-      <div className="flex justify-between items-center">
-        <h3 className="text-lg font-semibold">Profile Details</h3>
-        <button
-          onClick={() => setShowProfile(false)} // Close the modal
-          className="text-gray-500 hover:text-gray-700"
-        >
-          ✖
-        </button>
-      </div>
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+          <div className="bg-white p-6 rounded-lg shadow-lg w-96">
+            {/* Modal with rounded corners */}
+            <div className="flex justify-between items-center">
+              <h3 className="text-lg font-semibold">Profile Details</h3>
+              <button
+                onClick={() => setShowProfile(false)} // Close the modal
+                className="text-gray-500 hover:text-gray-700"
+              >
+                ✖
+              </button>
+            </div>
 
-      <div className="mt-4 flex flex-col items-center">
-        {user.profilePic ? (
-          <img src={user.profilePic} alt="Profile" className="w-24 h-24 rounded-full border" />
-        ) : (
-          <div className="w-24 h-24 bg-gray-300 rounded-full flex items-center justify-center">
-            <span className="text-gray-500">No Image</span>
+            <div className="mt-4 flex flex-col items-center">
+              {user.profilePic ? (
+                <img
+                  src={user.profilePic}
+                  alt="Profile"
+                  className="w-24 h-24 rounded-full border" // Profile picture rounded
+                />
+              ) : (
+                <div className="w-24 h-24 bg-gray-300 rounded-full flex items-center justify-center">
+                  <span className="text-gray-500">No Image</span>
+                </div>
+              )}
+              <input
+                type="file"
+                className="mt-2"
+                accept="image/*"
+                onChange={handleProfilePicChange}
+              />
+            </div>
+
+            <div className="mt-4">
+              <label className="block text-gray-700">Name:</label>
+              <input
+                type="text"
+                value={user.name}
+                onChange={(e) => setUser({ ...user, name: e.target.value })}
+                className="w-full border rounded p-2 bg-green-100" // Rounded inputs
+                disabled={!isEditing}
+              />
+              <label className="block text-gray-700 mt-2">Email:</label>
+              <input
+                type="email"
+                value={user.email}
+                onChange={(e) => setUser({ ...user, email: e.target.value })}
+                className="w-full border rounded p-2 bg-green-100" // Rounded inputs
+                disabled={!isEditing}
+              />
+              <label className="block text-gray-700 mt-2">Phone Number:</label>
+              <input
+                type="text"
+                value={user.phone}
+                onChange={(e) => setUser({ ...user, phone: e.target.value })}
+                className="w-full border rounded p-2 bg-green-100" // Rounded inputs
+                disabled={!isEditing}
+              />
+            </div>
+
+            <div className="mt-6 flex justify-between">
+              <button
+                onClick={handleDelete}
+                className="bg-orange-500 text-white py-2 px-4 rounded-full" // Rounded button
+              >
+                Delete
+              </button>
+              {isEditing ? (
+                <button
+                  onClick={handleSave}
+                  className="bg-green-500 text-white py-2 px-4 rounded-full" // Rounded button
+                >
+                  Save
+                </button>
+              ) : (
+                <button
+                  onClick={handleEdit}
+                  className="bg-gray-300 text-gray-700 py-2 px-4 rounded-lg flex items-center" // Rounded button
+                >
+                  Edit ✏️
+                </button>
+              )}
+            </div>
           </div>
-        )}
-        <input type="file" className="mt-2" accept="image/*" onChange={handleProfilePicChange} />
-      </div>
-
-      <div className="mt-4">
-        <label className="block text-gray-700">Name:</label>
-        <input type="text" value={user.name} onChange={(e) => setUser({ ...user, name: e.target.value })} className="w-full border rounded p-2 bg-green-100" disabled={!isEditing} />
-        <label className="block text-gray-700 mt-2">Email:</label>
-        <input type="email" value={user.email} onChange={(e) => setUser({ ...user, email: e.target.value })} className="w-full border rounded p-2 bg-green-100" disabled={!isEditing} />
-        <label className="block text-gray-700 mt-2">Phone Number:</label>
-        <input type="text" value={user.phone} onChange={(e) => setUser({ ...user, phone: e.target.value })} className="w-full border rounded p-2 bg-green-100" disabled={!isEditing} />
-      </div>
-
-      <div className="mt-6 flex justify-between">
-        <button onClick={handleDelete} className="bg-orange-500 text-white py-2 px-4 rounded">Delete</button>
-        {isEditing ? (
-          <button onClick={handleSave} className="bg-green-500 text-white py-2 px-4 rounded">Save</button>
-        ) : (
-          <button onClick={handleEdit} className="bg-gray-300 text-gray-700 py-2 px-4 rounded flex items-center">Edit ✏️</button>
-        )}
-      </div>
-    </div>
-  </div>
-)}
-
-
+        </div>
+      )}
       <nav className="mt-6">
         <ul>
           {menuItems.map((item) => (
-            <li key={item.name} className={`p-2 rounded my-2 ${activePage === item.path.substring(1) ? "bg-green-500 text-white" : ""}`}>
+            <li
+              key={item.name}
+              className={`p-2 rounded-lg my-2 ${
+                activePage === item.path.substring(1)
+                  ? "bg-green-500 text-white"
+                  : ""
+              }`}
+            >
               <Link href={item.path}>{item.name}</Link>
             </li>
           ))}
         </ul>
       </nav>
-
-      <button className="mt-6 w-full bg-red-500 text-white py-2 rounded" onClick={handleLogout}>Logout</button>
+      <button
+        className="mt-6 w-full bg-red-500 text-white py-2 rounded-lg" // Rounded button
+        onClick={handleLogout}
+      >
+        Logout
+      </button>
     </div>
   );
 }
