@@ -1,20 +1,20 @@
 "use client";
 import { useState } from "react";
 
-export default function ProjectForm({ onClose, onSave }) {
+export default function ProjectForm({ onClose, setProjects }) {
   const [formData, setFormData] = useState({
     project_name: "",
-    start_date: "",
-    end_date: "",
     description: "",
     estimated_total_hours: "",
     github_repository_link: "",
     requirements: "",
+    deadline: "",
+    budget_estimated: "",
+    clientperhourpay: "",
   });
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-
     setFormData((prev) => ({
       ...prev,
       [name]:
@@ -27,8 +27,8 @@ export default function ProjectForm({ onClose, onSave }) {
   const handleSubmit = async () => {
     console.log("Submitting Form Data:", formData);
 
-    if (!formData.project_name || !formData.end_date) {
-      alert("Project Name and End Date are required");
+    if (!formData.project_name || !formData.deadline) {
+      alert("Project Name and Deadline are required");
       return;
     }
 
@@ -39,6 +39,20 @@ export default function ProjectForm({ onClose, onSave }) {
     }
 
     try {
+      // First check if the backend is accessible
+      const healthCheck = await fetch("http://localhost:5000/test-db", {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (!healthCheck.ok) {
+        throw new Error(
+          "Backend server is not responding. Please check if the server is running."
+        );
+      }
+
       const response = await fetch("http://localhost:5000/project/create", {
         method: "POST",
         headers: {
@@ -48,16 +62,32 @@ export default function ProjectForm({ onClose, onSave }) {
         body: JSON.stringify(formData),
       });
 
+      const data = await response.json();
+
       if (!response.ok) {
-        throw new Error(`Failed to save project: ${response.statusText}`);
+        throw new Error(data.error || "Failed to create project");
       }
 
-      const data = await response.json();
       console.log("Project created:", data);
-      onSave(data);
+      // Refresh the projects list
+      const projectsResponse = await fetch(
+        "http://localhost:5000/project/dashboard",
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      const projectsData = await projectsResponse.json();
+      setProjects(projectsData.projects || []);
+      onClose();
     } catch (error) {
       console.error("Error saving project:", error);
-      alert("Failed to save project");
+      if (error.message.includes("Failed to fetch")) {
+        alert(
+          "Unable to connect to the server. Please check if the backend server is running."
+        );
+      } else {
+        alert(error.message || "Failed to save project");
+      }
     }
   };
 
@@ -68,7 +98,7 @@ export default function ProjectForm({ onClose, onSave }) {
 
         <div className="mb-4">
           <label className="block text-sm text-gray-600 mb-1">
-            Project Name
+            Project Name *
           </label>
           <input
             type="text"
@@ -76,73 +106,20 @@ export default function ProjectForm({ onClose, onSave }) {
             value={formData.project_name}
             onChange={handleChange}
             className="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-green-500"
+            required
           />
         </div>
 
-        <div className="flex gap-4 mb-4">
-          <div className="w-1/2">
-            <label className="block text-sm text-gray-600 mb-1">
-              Start Date
-            </label>
-            <div className="relative">
-              <input
-                type="date"
-                name="start_date"
-                value={formData.start_date}
-                onChange={handleChange}
-                className="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-green-500"
-              />
-              <span className="absolute right-2 top-2 text-gray-400">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="16"
-                  height="16"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-                  <line x1="16" y1="2" x2="16" y2="6"></line>
-                  <line x1="8" y1="2" x2="8" y2="6"></line>
-                  <line x1="3" y1="10" x2="21" y2="10"></line>
-                </svg>
-              </span>
-            </div>
-          </div>
-
-          <div className="w-1/2">
-            <label className="block text-sm text-gray-600 mb-1">End Date</label>
-            <div className="relative">
-              <input
-                type="date"
-                name="end_date"
-                value={formData.end_date}
-                onChange={handleChange}
-                className="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-green-500"
-              />
-              <span className="absolute right-2 top-2 text-gray-400">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="16"
-                  height="16"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-                  <line x1="16" y1="2" x2="16" y2="6"></line>
-                  <line x1="8" y1="2" x2="8" y2="6"></line>
-                  <line x1="3" y1="10" x2="21" y2="10"></line>
-                </svg>
-              </span>
-            </div>
-          </div>
+        <div className="mb-4">
+          <label className="block text-sm text-gray-600 mb-1">Deadline *</label>
+          <input
+            type="date"
+            name="deadline"
+            value={formData.deadline}
+            onChange={handleChange}
+            className="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-green-500"
+            required
+          />
         </div>
 
         <div className="mb-4">
@@ -160,10 +137,10 @@ export default function ProjectForm({ onClose, onSave }) {
 
         <div className="mb-4">
           <label className="block text-sm text-gray-600 mb-1">
-            Estimated Work Time (in hours)
+            Estimated Hours
           </label>
           <input
-            type="text"
+            type="number"
             name="estimated_total_hours"
             value={formData.estimated_total_hours}
             onChange={handleChange}
@@ -173,7 +150,7 @@ export default function ProjectForm({ onClose, onSave }) {
 
         <div className="mb-4">
           <label className="block text-sm text-gray-600 mb-1">
-            Repository Link (GitHub)
+            GitHub Repository Link
           </label>
           <input
             type="text"
@@ -184,7 +161,7 @@ export default function ProjectForm({ onClose, onSave }) {
           />
         </div>
 
-        <div className="mb-6">
+        <div className="mb-4">
           <label className="block text-sm text-gray-600 mb-1">
             Requirements
           </label>
@@ -197,18 +174,44 @@ export default function ProjectForm({ onClose, onSave }) {
           ></textarea>
         </div>
 
+        <div className="mb-4">
+          <label className="block text-sm text-gray-600 mb-1">
+            Budget Estimated
+          </label>
+          <input
+            type="number"
+            name="budget_estimated"
+            value={formData.budget_estimated}
+            onChange={handleChange}
+            className="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-green-500"
+          />
+        </div>
+
+        <div className="mb-4">
+          <label className="block text-sm text-gray-600 mb-1">
+            Client Per Hour Pay
+          </label>
+          <input
+            type="number"
+            name="clientperhourpay"
+            value={formData.clientperhourpay}
+            onChange={handleChange}
+            className="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-green-500"
+          />
+        </div>
+
         <div className="flex justify-end space-x-2">
           <button
             onClick={handleSubmit}
             className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-full"
           >
-            ✓
+            Create Project
           </button>
           <button
             onClick={onClose}
             className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-full"
           >
-            ✕
+            Cancel
           </button>
         </div>
       </div>

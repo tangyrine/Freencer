@@ -114,9 +114,9 @@ export default function ProjectDetailsPage({ searchParams }) {
   return (
     <div className="flex min-h-screen bg-gray-50 text-gray-800">
       <Sidebar activePage="projects" />
-      <div className="flex-1 p-8 overflow-y-auto">
+      <div className="flex-1 p-8 overflow-y-auto h-screen">
         <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl font-semibold">Projects</h1>
+          <h1 className="text-2xl font-semibold">Project Details</h1>
           <div className="flex gap-4">
             <button
               onClick={() => router.push("/projects")}

@@ -25,12 +25,12 @@ export default function Dashboard() {
 
   // Mock data for charts
   const growthData = [
-    { name: "Jan", value: 30 },
-    { name: "Feb", value: 45 },
-    { name: "Mar", value: 35 },
-    { name: "Apr", value: 60 },
-    { name: "May", value: 50 },
-    { name: "Jun", value: 75 },
+    { name: "Jan", value: 30, target: 40 },
+    { name: "Feb", value: 45, target: 50 },
+    { name: "Mar", value: 35, target: 60 },
+    { name: "Apr", value: 60, target: 70 },
+    { name: "May", value: 50, target: 80 },
+    { name: "Jun", value: 75, target: 90 },
   ];
 
   const pieData = [
@@ -41,24 +41,24 @@ export default function Dashboard() {
 
   const COLORS = ["#22c55e", "#3b82f6", "#f59e0b"];
 
-  // Mock notifications
+  // Mock notifications with real project names
   const notifications = [
     {
       id: 1,
       type: "deadline",
-      message: "Project X deadline approaching in 2 days",
+      message: "E-commerce Website deadline approaching in 2 days",
       date: "2024-03-20",
     },
     {
       id: 2,
       type: "payment",
-      message: "Payment received for Project Y",
+      message: "Payment received for Mobile App Development",
       date: "2024-03-19",
     },
     {
       id: 3,
       type: "task",
-      message: "New task assigned: Update UI Components",
+      message: "New task assigned: Update UI Components for Dashboard Redesign",
       date: "2024-03-18",
     },
   ];
@@ -97,6 +97,34 @@ export default function Dashboard() {
     },
   ];
 
+  // Mock completed projects
+  const completedProjects = [
+    {
+      id: 1,
+      name: "Portfolio Website",
+      completionDate: "2024-02-15",
+      finalProgress: 100,
+      client: "John Doe",
+      totalHours: 120,
+    },
+    {
+      id: 2,
+      name: "E-commerce Backend",
+      completionDate: "2024-01-30",
+      finalProgress: 100,
+      client: "Tech Corp",
+      totalHours: 200,
+    },
+    {
+      id: 3,
+      name: "Mobile App UI",
+      completionDate: "2024-02-28",
+      finalProgress: 100,
+      client: "StartUp Inc",
+      totalHours: 150,
+    },
+  ];
+
   // Calendar functions
   const getDaysInMonth = (date) => {
     return new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
@@ -129,7 +157,7 @@ export default function Dashboard() {
   return (
     <div className="flex min-h-screen bg-gray-50">
       <Sidebar activePage="dashboard" />
-      <div className="flex-1 p-6 overflow-y-auto">
+      <div className="flex-1 p-6 overflow-y-auto h-screen">
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-2xl font-bold text-black">Dashboard</h1>
           <div className="flex items-center space-x-4">
@@ -151,7 +179,7 @@ export default function Dashboard() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 relative">
           {/* Main Content - Left Side */}
           <div className="lg:col-span-2 space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -160,26 +188,138 @@ export default function Dashboard() {
                 <h2 className="text-lg font-semibold mb-4 text-black">
                   Growth Overview
                 </h2>
-                <div className="h-[200px]">
+                <div className="h-[250px]">
                   <ResponsiveContainer width="100%" height="100%">
                     <LineChart data={growthData}>
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis dataKey="name" tick={{ fill: "black" }} />
-                      <YAxis tick={{ fill: "black" }} />
+                      <defs>
+                        <linearGradient
+                          id="colorValue"
+                          x1="0"
+                          y1="0"
+                          x2="0"
+                          y2="1"
+                        >
+                          <stop
+                            offset="5%"
+                            stopColor="#22c55e"
+                            stopOpacity={0.1}
+                          />
+                          <stop
+                            offset="95%"
+                            stopColor="#22c55e"
+                            stopOpacity={0}
+                          />
+                        </linearGradient>
+                        <linearGradient
+                          id="colorTarget"
+                          x1="0"
+                          y1="0"
+                          x2="0"
+                          y2="1"
+                        >
+                          <stop
+                            offset="5%"
+                            stopColor="#3b82f6"
+                            stopOpacity={0.1}
+                          />
+                          <stop
+                            offset="95%"
+                            stopColor="#3b82f6"
+                            stopOpacity={0}
+                          />
+                        </linearGradient>
+                      </defs>
+                      <CartesianGrid
+                        strokeDasharray="3 3"
+                        stroke="#f0f0f0"
+                        vertical={false}
+                      />
+                      <XAxis
+                        dataKey="name"
+                        tick={{ fill: "black", fontSize: 12 }}
+                        axisLine={{ stroke: "#e5e7eb" }}
+                        tickLine={{ stroke: "#e5e7eb" }}
+                        padding={{ left: 20, right: 20 }}
+                      />
+                      <YAxis
+                        tick={{ fill: "black", fontSize: 12 }}
+                        axisLine={{ stroke: "#e5e7eb" }}
+                        tickLine={{ stroke: "#e5e7eb" }}
+                        padding={{ top: 20, bottom: 20 }}
+                      />
                       <Tooltip
                         contentStyle={{
                           backgroundColor: "white",
                           border: "none",
+                          borderRadius: "8px",
+                          boxShadow:
+                            "0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)",
+                          zIndex: 0,
                         }}
+                        labelStyle={{
+                          color: "#374151",
+                          fontWeight: 500,
+                          fontSize: "14px",
+                          marginBottom: "4px",
+                        }}
+                        itemStyle={{
+                          color: "#22c55e",
+                          fontSize: "13px",
+                          padding: "4px 0",
+                        }}
+                        cursor={{ stroke: "#e5e7eb", strokeWidth: 1 }}
                       />
                       <Line
                         type="monotone"
                         dataKey="value"
                         stroke="#22c55e"
                         strokeWidth={2}
+                        dot={{
+                          fill: "#22c55e",
+                          strokeWidth: 2,
+                          r: 4,
+                          stroke: "white",
+                        }}
+                        activeDot={{
+                          fill: "#22c55e",
+                          strokeWidth: 2,
+                          r: 6,
+                          stroke: "white",
+                        }}
+                        fill="url(#colorValue)"
+                      />
+                      <Line
+                        type="monotone"
+                        dataKey="target"
+                        stroke="#3b82f6"
+                        strokeWidth={2}
+                        strokeDasharray="5 5"
+                        dot={{
+                          fill: "#3b82f6",
+                          strokeWidth: 2,
+                          r: 4,
+                          stroke: "white",
+                        }}
+                        activeDot={{
+                          fill: "#3b82f6",
+                          strokeWidth: 2,
+                          r: 6,
+                          stroke: "white",
+                        }}
+                        fill="url(#colorTarget)"
                       />
                     </LineChart>
                   </ResponsiveContainer>
+                </div>
+                <div className="flex justify-center gap-6 mt-6">
+                  <div className="flex items-center">
+                    <div className="w-3 h-3 rounded-full mr-2 bg-green-500"></div>
+                    <span className="text-sm text-black">Actual</span>
+                  </div>
+                  <div className="flex items-center">
+                    <div className="w-3 h-3 rounded-full mr-2 bg-blue-500"></div>
+                    <span className="text-sm text-black">Target</span>
+                  </div>
                 </div>
               </div>
 
@@ -212,6 +352,21 @@ export default function Dashboard() {
                         contentStyle={{
                           backgroundColor: "white",
                           border: "none",
+                          borderRadius: "8px",
+                          boxShadow:
+                            "0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)",
+                          zIndex: 0,
+                        }}
+                        labelStyle={{
+                          color: "#374151",
+                          fontWeight: 500,
+                          fontSize: "14px",
+                          marginBottom: "4px",
+                        }}
+                        itemStyle={{
+                          color: "#22c55e",
+                          fontSize: "13px",
+                          padding: "4px 0",
                         }}
                       />
                     </PieChart>
@@ -296,7 +451,7 @@ export default function Dashboard() {
                     className="p-1 hover:bg-gray-100 rounded"
                   >
                     <svg
-                      className="w-5 h-5"
+                      className="w-5 h-5 text-black"
                       fill="none"
                       stroke="currentColor"
                       viewBox="0 0 24 24"
@@ -320,7 +475,7 @@ export default function Dashboard() {
                     className="p-1 hover:bg-gray-100 rounded"
                   >
                     <svg
-                      className="w-5 h-5"
+                      className="w-5 h-5 text-black"
                       fill="none"
                       stroke="currentColor"
                       viewBox="0 0 24 24"
